@@ -1,3 +1,26 @@
+# TODO
+
+- [ ] Add product feature map
+- [ ] Add hardware efficient ansatz
+- [ ] Add a cost function
+- [ ] Add loss function
+- [ ] Add boundary handling method
+- [ ] Combine into a single runner, to handle simple ODEs
+## BONUS
+
+- [ ] Add Chebyshev feature maps
+- [ ] Extend the runner to handle nonlinear ODEs
+<!--- 
+- [ ] (for unchecked checkbox)
+- [x] (for checked checkbox)
+--->
+# Resources
+- https://pennylane.ai/qml/glossary/quantum_differentiable_programming/ (*)
+- https://doi.org/10.1103/PhysRevA.103.052416 / https://arxiv.org/pdf/2011.10395.pdf (**)
+- https://doi.org/10.1103/PhysRevA.104.052417 / https://arxiv.org/pdf/2108.01218.pdf (***)
+- https://arxiv.org/abs/2306.17026 (****)
+- https://arxiv.org/abs/2308.01827
+
 # python-docker
 
 Download docker from https://www.docker.com/
@@ -48,7 +71,7 @@ To add every changed file use:
 
 `git add .`
 
-Commiting files after adding them to the commit:
+Committing files after adding them to the commit:
 
 `git commit -m "commit message"`
 
