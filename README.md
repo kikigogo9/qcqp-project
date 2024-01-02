@@ -1,11 +1,11 @@
 # TODO
 
-- [ ] Add product feature map
-- [ ] Add hardware efficient ansatz
-- [ ] Add a cost function
-- [ ] Add loss function
-- [ ] Add boundary handling method
-- [ ] Combine into a single runner, to handle simple ODEs
+- [ ] Add product feature map - Nick
+- [ ] Add hardware efficient ansatz - Willow
+- [ ] Add a cost function - Kristian
+- [ ] Add loss function - Nick
+- [ ] Add boundary handling method - Willow
+- [ ] Combine into a single runner, to handle simple ODEs - Kristian
 ## BONUS
 
 - [ ] Add Chebyshev feature maps
