@@ -36,7 +36,7 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     python -m pip install tensorflow==2.11.0 tensorflow-quantum==0.7.2 flask cirq
 
 # Switch to the non-privileged user to run the application.
-USER appuser
+# USER appuser
 
 # Copy the source code into the container.
 COPY . .
