@@ -1,15 +1,15 @@
 # TODO
 
-- [X] Add product feature map - Nick
+- [x] Add product feature map - Nick
 - [ ] Add product feature map derivative
 - [ ] Add hardware efficient ansatz - Willow
-- [ ] Add a cost function - Kristian
+- [x] Add a cost function - Kristian
 - [ ] Add loss function - Nick
 - [ ] Add boundary handling method - Willow
 - [ ] Combine into a single runner, to handle simple ODEs - Kristian
 ## BONUS
 
-- [X] Add Chebyshev feature maps
+- [ ] Add Chebyshev feature maps
 - [ ] Extend the runner to handle nonlinear ODEs
 <!--- 
 - [ ] (for unchecked checkbox)
