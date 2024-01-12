@@ -34,10 +34,14 @@ RUN adduser \
 # into this layer.
 RUN --mount=type=cache,target=/root/.cache/pip \
     --mount=type=bind,source=requirements.txt,target=requirements.txt \
-    python -m pip install -r requirements.txt flask cirq
+    python -m pip install -r requirements.txt flask
+RUN python -m pip install -U tensorflow-quantum
+RUN python -m pip install -U tfq-nightly
+RUN python -m pip install cirq
+RUN python -m pip install --force-reinstall -v "protobuf==3.20.0"
 
 # Switch to the non-privileged user to run the application.
-USER appuser
+# USER appuser
 
 # Copy the source code into the container.
 COPY . .
