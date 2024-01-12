@@ -10,7 +10,7 @@ class featureMap(ABC):
     def __init__(self, circuit : cirq.Circuit, symbol : sympy.Symbol, qubits):
         self.circuit = circuit
         self.qubits = qubits
-        self.nQubit = len(function.all_qubits())
+        self.nQubit = len(circuit.all_qubits())
         self.symbol = symbol
 
     @abstractmethod
@@ -23,7 +23,7 @@ class featureMap(ABC):
     def parametrizedCircuit(self, tower : bool):
         # Apply a parametrized rotation gate for each qubit
         for i in range(self.nQubit):
-            self.circuit.append(cirq.ry(rotationFunction(x, i if tower else 1/2)).on(self.qubits[i]))
+            self.circuit.append(cirq.ry(self.rotationFunction(i if tower else 1 / 2)).on(self.qubits[i]))
         return tfq.convert_to_tensor([self.circuit])
 
 class productMap(featureMap):
