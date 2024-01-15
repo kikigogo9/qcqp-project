@@ -7,6 +7,7 @@ import sympy
 from cirq import Circuit
 import tensorflow as tf
 
+from QNN.ansatz.ansatz import Ansatz
 from QNN.cost_function.cost_function import CostFunction
 from gradient_calculator.ParamShift import ParamShift
 
@@ -48,7 +49,7 @@ class IsingHamiltonian(CostFunction):
             self.symbol_names,
             in_values)
     
-    def get_gradient_cost(self, in_values: tf.tensor) -> tf.Tensor:
+    def get_gradient_cost(self, in_values: tf.Tensor) -> tf.Tensor:
         """
         
         @param in_values: parameters included in the circuit
@@ -66,11 +67,13 @@ if __name__ == "__main__":
     a, b = sympy.symbols('a b')
     q0, q1 = cirq.GridQubit.rect(1, 2)
 
-    function = Circuit(
-        cirq.rx(a).on(q0),
-        cirq.rx(b).on(q1), cirq.CNOT(q0, q1)
-    )
-    cost_function = IsingHamiltonian(function, [q0, q1], [a, b])
-    in_values = np.array([[np.pi, np.pi / 2.]])
+    #function = Circuit(
+    #    cirq.rx(a).on(q0),
+    #    cirq.rx(b).on(q1), cirq.CNOT(q0, q1)
+    #)
+    ansatz = Ansatz.generate_circuit(3, 2)
+
+    cost_function = IsingHamiltonian(ansatz.circuit, ansatz.qubits, ansatz.symbol_names)
+    in_values = np.ones(len(ansatz.symbol_names))
 
     print(cost_function.get_cost(in_values))

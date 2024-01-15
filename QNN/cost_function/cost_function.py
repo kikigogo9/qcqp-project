@@ -16,5 +16,5 @@ class CostFunction(ABC):
         pass
 
     @abstractmethod
-    def get_gradient_cost(self, in_values: tf.tensor):
+    def get_gradient_cost(self, in_values: tf.Tensor):
         pass
