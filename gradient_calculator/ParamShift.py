@@ -10,12 +10,11 @@ class ParamShift:
     SAMPLED = "sampled"
 
     def __init__(self, circuit: cirq.Circuit, observable: cirq.Pauli, expectation_mode="sampled"):
-
         self.circuit = circuit
         self.observable = observable
-        if expectation_mode == "sampled":
+        if expectation_mode == self.SAMPLED:
             self.expectation = self._get_noisy_sampler()
-        elif expectation_mode == "exact":
+        elif expectation_mode == self.EXACT:
             self.expectation = self._get_exact_sampler()
         else:
             raise Exception(f"unknown expectation mode {expectation_mode}")
@@ -28,23 +27,21 @@ class ParamShift:
         return tfq.layers.Expectation(
             differentiator=tfq.differentiators.ParameterShift())
 
-    def get_expectation(self,
-                       circuit: cirq.Circuit,
-                       operator: cirq.Pauli,
-                       symbol_names: List[Any],
-                       symbol_values: List[Any],
-                       repetitions=500
-                       ) -> float:
-        return self.expectation(circuit, operators=operator, symbol_names=symbol_names, symbol_values=symbol_values)
+    def get_expectation(self, symbol_names: List[Any], symbol_values: List[Any]) -> tf.Tensor:
+        return self.expectation(self.circuit, 
+                    operators=self.observable, 
+                    repetitions=500, 
+                    symbol_names=symbol_names, 
+                    symbol_values=symbol_values)
 
-    def get_gradient(self, in_values: tf.Tensor) -> tf.Tensor:
+    def get_gradient(self, symbol_names: List[Any], in_values: tf.Tensor) -> tf.Tensor:
         with tf.GradientTape() as g:
             g.watch(in_values)
             out = self.expectation(
                 self.circuit,
                 operators=self.observable,
                 repetitions=500,
-                symbol_names=['alpha'],
+                symbol_names=symbol_names,
                 symbol_values=in_values)
 
         return g.gradient(out, in_values)

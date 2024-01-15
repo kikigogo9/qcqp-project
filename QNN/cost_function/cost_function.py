@@ -12,5 +12,9 @@ class CostFunction(ABC):
         self.nQubit = len(function.all_qubits())
 
     @abstractmethod
-    def get_cost(self, in_values: tf.Tensor, initial_value: float):
+    def get_cost(self, in_values: tf.Tensor):
+        pass
+
+    @abstractmethod
+    def get_gradient_cost(self, in_values: tf.tensor):
         pass

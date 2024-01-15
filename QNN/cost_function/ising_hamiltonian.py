@@ -1,10 +1,11 @@
 from random import Random
-from typing import Any
+from typing import Any, List
 
 import cirq
 import numpy as np
 import sympy
 from cirq import Circuit
+import tensorflow as tf
 
 from QNN.cost_function.cost_function import CostFunction
 from gradient_calculator.ParamShift import ParamShift
@@ -15,16 +16,14 @@ class IsingHamiltonian(CostFunction):
     This class produces a more sophisticated version of the other cost functions.
     """
 
-    def __init__(self, function: Circuit, qubits, symbol_names, initial_value=0):
+    def __init__(self, function: Circuit, qubits, symbol_names: List[Any]):
         """
 
         @param function: ODE circuit we currently train
         @param symbol_names: List of sympy variable names
-        @param initial_value: boundary condition at f(x_0)
         """
         super().__init__(function)
         self.symbol_names = symbol_names
-        self.initial_value = initial_value
 
         self.cost_function = None
         for q in qubits:
@@ -39,21 +38,25 @@ class IsingHamiltonian(CostFunction):
 
         self.expectation = ParamShift(function, self.cost_function, ParamShift.EXACT)
 
-    def get_cost(self, in_values: Any, initial_value: float = 0) -> float:
+    def get_cost(self, in_values: Any) -> tf.Tensor:
         """
 
-        @param initial_value:
         @param in_values: parameters included in the circuit
-        @return: cost value of the circuit with the given parameters
+        @return: cost tensor of the circuit with the given parameters
         """
-        self.initial_value = initial_value
-        return (initial_value + self.expectation.get_expectation(
-            self.function,
-            self.cost_function,
+        return self.expectation.get_expectation(
             self.symbol_names,
-            in_values,
-            None)
-                )
+            in_values)
+    
+    def get_gradient_cost(self, in_values: tf.tensor) -> tf.Tensor:
+        """
+        
+        @param in_values: parameters included in the circuit
+        @return: cost tensors of the gradient of the circuit with the given parameters
+        """
+        return self.expectation.get_gradient(
+            self.symbol_names,
+            in_values)
 
     def _random_weight(self) -> float:
         return 2 * (Random().random() - 0.5)

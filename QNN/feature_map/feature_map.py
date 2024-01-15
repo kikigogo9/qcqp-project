@@ -13,25 +13,58 @@ class featureMap(ABC):
         self.nQubit = len(circuit.all_qubits())
         self.symbol = symbol
 
-    @abstractmethod
-    def rotationFunction(self, index : int):
-        pass
-    
-    # Apply parametrized rotation gates for N qubits
-    # tower denotes whether we are working with a regular product/chebyshev feature map
-    # or a product/chebyshev tower feature map
-    def parametrizedCircuit(self, tower : bool):
-        # Apply a parametrized rotation gate for each qubit
-        for i in range(self.nQubit):
-            self.circuit.append(cirq.ry(self.rotationFunction(i if tower else 1 / 2)).on(self.qubits[i]))
-        return tfq.convert_to_tensor([self.circuit])
-
 class productMap(featureMap):
-    # Nonlinear rotation function for product map
-    def rotationFunction(self, index : int):
-        return 2*index*np.arcsin(self.symbol)
+    """
+
+    Implements product feature map with parametrized rotations
+    """
+
+    def rotationFunction(self):
+        """
+
+        Nonlinear rotation function for product map
+        @return: rotation function
+        """
+        return np.arcsin(self.symbol)
+
+    def parametrizedCircuit(self):
+        """
+
+        Apply parametrized rotation gates for N qubits
+        @return: product map circuit
+        """
+        for i in range(self.nQubit):
+            self.circuit.append(cirq.ry(self.rotationFunction(i)).on(self.qubits[i]))
+        return self.circuit
     
 class chebyshevMap(featureMap):
-    # Nonlinear rotation function for chebyshev map
+    """
+
+    Implements product chebyshev map
+    """
+
     def rotationFunction(self, index : int):
-        return 2*index*np.arccos(self.symbol)
+        """
+
+        Nonlinear rotation function for chebyshev map
+        @param index: rotation (degree) index
+        @return: rotation function
+        """
+        return np.cos(index * np.arccos(self.symbol))
+
+    def parametrizedCircuit(self, degree: int = 2):
+        """
+
+        First apply hadamard to N qubits, then apply rotations with
+        rotation function for a certain degree
+        @param degree: depth of tower
+        @return: chebyshev map circuit
+        """
+        for qubit in self.qubits:
+            self.circuit.append(cirq.H(qubit))
+
+        for i in range(degree):
+            for j in range(self.nQubit):
+                self.circuit.append(cirq.rx(self.rotationFunction(i) * np.pi).on(self.qubits[i]))
+        return self.circuit
+
