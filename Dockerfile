@@ -33,7 +33,12 @@ RUN adduser \
 # Leverage a bind mount to requirements.txt to avoid having to copy them into
 # into this layer.
 RUN --mount=type=cache,target=/root/.cache/pip \
-    python -m pip install tensorflow==2.11.0 tensorflow-quantum==0.7.2 flask cirq
+    --mount=type=bind,source=requirements.txt,target=requirements.txt \
+    python -m pip install -r requirements.txt flask
+RUN python -m pip install -U tensorflow-quantum
+RUN python -m pip install -U tfq-nightly
+RUN python -m pip install cirq
+RUN python -m pip install --force-reinstall -v "protobuf==3.20.0"
 
 # Switch to the non-privileged user to run the application.
 # USER appuser

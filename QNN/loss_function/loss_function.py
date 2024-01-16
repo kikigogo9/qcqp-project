@@ -4,6 +4,7 @@ import cirq
 import numpy as np
 import sympy
 from cirq import Circuit
+import tensorflow as tf
 
 from QNN.cost_function.cost_function import CostFunction
 from QNN.diff_equation.diff_equation import DiffEquation
@@ -39,5 +40,5 @@ class lossFunction:
         @return: loss of particular differential equation & cost function
         with given input values, using specified loss function
         """
-        solutions = equation.ODE(self.cost_function, in_values)
+        solutions = equation.ODE(self.cost_function)
         return self.loss(solutions, tf.zeros(tf.shape(solutions)))

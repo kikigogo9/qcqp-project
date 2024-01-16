@@ -1,5 +1,5 @@
 from random import Random
-from typing import Any, List
+from typing import Any, List, Tuple
 
 import cirq
 import numpy as np
@@ -25,17 +25,17 @@ class IsingHamiltonian(CostFunction):
         """
         super().__init__(function)
         self.symbol_names = symbol_names
-
+        print("symbol_name_size" + str(len(symbol_names)))
         self.cost_function = None
-        for q in qubits:
+        for i, q in enumerate(qubits):
             if self.cost_function is None:
                 self.cost_function = self._random_weight() * cirq.Z(q)
             else:
-                self.cost_function += self._random_weight() * cirq.Z(q)
-            self.cost_function += self._random_weight() * cirq.X(q)
-            for q2 in qubits:
-                if not (q2 is q):
-                    self.cost_function += cirq.Z(q2) * cirq.Z(q) * self._random_weight()
+                self.cost_function += cirq.Z(q)
+            #self.cost_function += self._random_weight() * cirq.X(q)
+            #for j, q2 in enumerate(qubits):
+            #    if j < i:
+            #        self.cost_function += cirq.Z(q2) * cirq.Z(q) * self._random_weight()*2
 
         self.expectation = ParamShift(function, self.cost_function, ParamShift.EXACT)
 
@@ -49,7 +49,7 @@ class IsingHamiltonian(CostFunction):
             self.symbol_names,
             in_values)
     
-    def get_gradient_cost(self, in_values: tf.Tensor) -> tf.Tensor:
+    def get_gradient_cost(self, in_values: Any, train_y: Any) -> tuple[Any, Any]:
         """
         
         @param in_values: parameters included in the circuit
@@ -57,10 +57,12 @@ class IsingHamiltonian(CostFunction):
         """
         return self.expectation.get_gradient(
             self.symbol_names,
-            in_values)
+            in_values,
+            train_y
+        )
 
     def _random_weight(self) -> float:
-        return 2 * (Random().random() - 0.5)
+        return 0.5 * float(np.random.choice([-1, 1]) * np.random.normal(1, 0.33))
 
 
 if __name__ == "__main__":
@@ -74,6 +76,6 @@ if __name__ == "__main__":
     ansatz = Ansatz.generate_circuit(3, 2)
 
     cost_function = IsingHamiltonian(ansatz.circuit, ansatz.qubits, ansatz.symbol_names)
-    in_values = np.ones(len(ansatz.symbol_names))
+    in_values = np.random.random(len(ansatz.symbol_names))
 
-    print(cost_function.get_cost(in_values))
+    print(cost_function.get_cost([in_values]))

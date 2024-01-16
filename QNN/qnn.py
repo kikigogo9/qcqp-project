@@ -1,61 +1,83 @@
+from copy import deepcopy
+
+import cirq
 import numpy as np
+import sympy
 import tensorflow as tf
 from tqdm import tqdm
 
+from QNN.ansatz.ansatz import Ansatz
 from QNN.cost_function.cost_function import CostFunction
 from QNN.cost_function.ising_hamiltonian import IsingHamiltonian
+from QNN.feature_map.feature_map import productMap
+import matplotlib.pyplot as plt
 
-qubit_number = 5
-depth = 5
-epoch = 1000
-space_size = 100
-
+qubit_number = 6
+depth = 8
+epoch = 60
+space_size = 10
+learning_rate = 0.05
 seed = 42
 
 
-def build_binary_table(space, depth):
-    """
-    Depth defines the approximation of the binary number.
-    Depth=5 means we take the 5 most significant digits of the input float
-    :param space:
-    :param depth:
-    :return:
-    """
-    binary_table = tf.convert_to_tensor([])
-    for x_in in space:
-        x_1 = []
-        for _ in range(depth):
-            x_in = 2 * x_in
-            x_1 += [np.floor(2 * x_in)]
-            if x_in >= 1:
-                x_in -= 1
-        binary_table = tf.concat(binary_table, tf.convert_to_tensor(x_1))
-    return binary_table
+def plot_fit_and_loss():
+    plt.plot(train_X, Y_pred)
+    plt.plot(train_X, train_Y)
+    plt.plot(train_X, best_fit, linestyle='dashed')
+    plt.show()
+    plt.plot(range(epoch), loss_hist)
+    plt.yscale("log")
+    plt.plot(tf.transpose(theta_hist)[0], linestyle='dashed')
+    plt.plot(tf.transpose(theta_hist)[2], linestyle='dashed')
+    plt.plot(tf.transpose(theta_hist)[1], linestyle='dashed')
+    plt.show()
 
-
-@tf.function
-def custom_accuracy(y_true, y_pred):
-    y_true = tf.squeeze(y_true)
-    return tf.keras.metrics.mean_squared_error(y_true, y_pred)
 
 if __name__ == "__main__":
-    # get circuit of feature map
-    # get circuit of ansatz
-    cost_function: CostFunction = IsingHamiltonian()
-    theta = tf.random.uniform(qubit_number * depth, 0, 2 * np.pi, seed=42)
+
+    qubits = cirq.GridQubit.rect(qubit_number, 1)
+    x = sympy.Symbol('x')
+    feature_map = productMap(symbol=x, qubits=qubits).parametrizedCircuit()
+    ansatz = Ansatz.generate_circuit(qubits, qubit_number, depth)
+
+    cost_function = IsingHamiltonian(feature_map + ansatz.circuit, ansatz.qubits, ansatz.symbol_names + [x])
+    in_values = np.random.random(len(ansatz.symbol_names))
+
+    theta = tf.convert_to_tensor(np.random.uniform(0, 2 * np.pi, (qubit_number * depth * 3)), dtype=tf.float32)
 
     theta_hist = []
     loss_hist = []
+    best_fit = None
+    best_loss = 100
 
-    train_X = tf.linspace(0, 1, space_size)
-    train_Y = tf.cos(np.pi * train_X)
-    initial_value = 1.0
+    train_X = tf.convert_to_tensor(np.linspace(0, 1, space_size, dtype=np.float32))
+    train_Y = tf.sin(2*np.pi * train_X)
 
-    x_bin_table = build_binary_table(train_X, depth)
-
+    loss = tf.keras.losses.MeanSquaredError()
     for i in tqdm(range(epoch)):
-        Y_pred = tf.zeros()
-        for x in range(train_X):
-            x_bin = x_bin_table[x]
-            Y_pred[x] = cost_function.get_cost(tf.concat(x_bin, theta), initial_value)
 
+
+        grads = []
+
+        #new_values = tf.convert_to_tensor([tf.concat([theta, train_X], axis=0)])
+        new_values = tf.repeat([theta], repeats=space_size, axis=0)
+
+        new_values = tf.transpose(new_values)
+        new_values = tf.concat([new_values, tf.expand_dims(train_X, 0)], axis=0)
+        new_values = tf.transpose(new_values)
+
+        Y_pred, gradient = cost_function.get_gradient_cost(new_values, train_Y)
+        grads.append(gradient)
+        reduced = tf.reduce_mean(tf.convert_to_tensor(grads), axis=1)
+        theta -= learning_rate * reduced[0, :-1]
+
+        plt.savefig("asd.png")
+        theta_hist += [deepcopy(theta)]
+        l = loss(train_Y, Y_pred)
+        if best_loss > l:
+            best_loss = l
+            best_fit = Y_pred
+        loss_hist += [l]
+        if i % 10 == 0:
+            print("Progress:" + str(i/epoch))
+    plot_fit_and_loss()

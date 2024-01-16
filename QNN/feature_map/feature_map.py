@@ -2,15 +2,16 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 import sympy
+from sympy.stats import Arcsin
 import cirq
+import tensorflow as tf
 import tensorflow_quantum as tfq
 
 class featureMap(ABC):
-    @abstractmethod
-    def __init__(self, circuit : cirq.Circuit, symbol : sympy.Symbol, qubits):
-        self.circuit = circuit
+    def __init__(self, symbol : sympy.Symbol, qubits):
+        self.circuit = None
         self.qubits = qubits
-        self.nQubit = len(circuit.all_qubits())
+        self.nQubit = len(qubits)
         self.symbol = symbol
 
 class productMap(featureMap):
@@ -19,13 +20,13 @@ class productMap(featureMap):
     Implements product feature map with parametrized rotations
     """
 
-    def rotationFunction(self):
+    def rotationFunction(self, symbol):
         """
 
         Nonlinear rotation function for product map
         @return: rotation function
         """
-        return np.arcsin(self.symbol)
+        return symbol
 
     def parametrizedCircuit(self):
         """
@@ -33,8 +34,10 @@ class productMap(featureMap):
         Apply parametrized rotation gates for N qubits
         @return: product map circuit
         """
+        gates = []
         for i in range(self.nQubit):
-            self.circuit.append(cirq.ry(self.rotationFunction(i)).on(self.qubits[i]))
+            gates.append(cirq.ry((i+1)*self.rotationFunction(self.symbol)).on(self.qubits[i]))
+        self.circuit = cirq.Circuit(*gates)
         return self.circuit
     
 class chebyshevMap(featureMap):

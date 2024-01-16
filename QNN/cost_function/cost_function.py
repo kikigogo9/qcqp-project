@@ -1,13 +1,13 @@
 from abc import ABC, abstractmethod
+from typing import Any
 
 from cirq import Circuit
 import tensorflow as tf
 
 
-
 class CostFunction(ABC):
 
-    def __init__(self, function : Circuit):
+    def __init__(self, function: Circuit):
         self.function = function
         self.nQubit = len(function.all_qubits())
 
@@ -16,5 +16,5 @@ class CostFunction(ABC):
         pass
 
     @abstractmethod
-    def get_gradient_cost(self, in_values: tf.Tensor):
+    def get_gradient_cost(self, in_values: tf.Tensor, train_y: Any):
         pass

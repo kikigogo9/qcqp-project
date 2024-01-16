@@ -6,13 +6,11 @@ import sympy
 from cirq.contrib.svg import SVGCircuit
 
 
-
 class Ansatz:
     def __init__(self, qubits: cirq.GridQubit, depth: int):
         self.depth = depth
         self.qubits = qubits
         self.nQubits = len(qubits)
-        print(self.nQubits)
         self.symbol_names = []
         self.circuit = None
 
@@ -25,17 +23,17 @@ class Ansatz:
         """
         rot_gates = []
         for i in range(self.depth):
-            names = self.generate_names()
-            self.symbol_names += names
             for j in range(self.nQubits):
-                r1 = cirq.rz(names[j])
-                r2 = cirq.rx(names[j])
-                r3 = cirq.rz(names[j])
+                names = self.generate_names()
+                self.symbol_names += names
+                r1 = cirq.rz(names[0])
+                r2 = cirq.rx(names[1])
+                r3 = cirq.rz(names[2])
 
                 rot_gates.append(r1.on(self.qubits[j]))
                 rot_gates.append(r2.on(self.qubits[j]))
                 rot_gates.append(r3.on(self.qubits[j]))
-            for j in range(self.nQubits-1):
+            for j in range(self.nQubits - 1):
                 if j % 2 == 0:
                     rot_gates.append(cirq.CNOT(self.qubits[j], self.qubits[j + 1]))
             for j in range(self.nQubits - 1):
@@ -54,22 +52,23 @@ class Ansatz:
             self.circuit = cirq.Circuit(*self.hardware_efficient_rot())
         return self.circuit
 
-    def generate_names(self)->list[sympy.Symbol]:
-        def generate_string(n:int)->str:
+    def generate_names(self) -> list[sympy.Symbol]:
+        def generate_string(n: int) -> str:
             return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(n))
 
-        return sympy.symbols([generate_string(8) for _ in range(self.nQubits)])
+        return sympy.symbols([generate_string(8) for _ in range(3)])
 
-    def generate_circuit(qubit_number: int, depth:int):
-        qubits = cirq.GridQubit.rect(qubit_number, 1)
+    def generate_circuit(qubits, qubit_number: int, depth: int):
+
         ansatz = Ansatz(qubits, depth)
+        ansatz.hardware_efficient()
         return ansatz
 
 
 if __name__ == "__main__":
-    qubits = cirq.GridQubit.rect(5,1)
+    qubits = cirq.GridQubit.rect(5, 1)
     ansatz = Ansatz(qubits, 2)
-    #print(SVGCircuit(ansatz.hardware_efficient())._repr_svg_())
+    # print(SVGCircuit(ansatz.hardware_efficient())._repr_svg_())
 
     f = open("demofile2.svg", "w")
     f.write(SVGCircuit(ansatz.hardware_efficient())._repr_svg_())
