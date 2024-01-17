@@ -12,10 +12,10 @@ from QNN.cost_function.ising_hamiltonian import IsingHamiltonian
 from QNN.feature_map.feature_map import productMap
 import matplotlib.pyplot as plt
 
-qubit_number = 6
-depth = 8
-epoch = 60
-space_size = 10
+qubit_number = 4
+depth = 5
+epoch = 300
+space_size = 20
 learning_rate = 0.05
 seed = 42
 
@@ -79,5 +79,5 @@ if __name__ == "__main__":
             best_fit = Y_pred
         loss_hist += [l]
         if i % 10 == 0:
-            print("Progress:" + str(i/epoch))
+            print(f"Progress: {i}/{epoch}")
     plot_fit_and_loss()

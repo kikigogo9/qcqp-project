@@ -31,10 +31,10 @@ class ParamShift:
             differentiator=tfq.differentiators.ParameterShift())
 
     def get_expectation(self, symbol_names: List[Any], symbol_values: List[Any]) -> tf.Tensor:
-        return self.expectation(self.circuit, 
-                    operators=self.observable,
-                    symbol_names=symbol_names, 
-                    symbol_values=symbol_values)
+        return self.expectation(self.circuit,
+                                operators=self.observable,
+                                symbol_names=symbol_names,
+                                symbol_values=symbol_values)
 
     def get_gradient(self, symbol_names: List[Any], in_values: tf.Tensor, train_y: Any) -> tuple[Any, Any]:
         mse = tf.keras.losses.MeanSquaredError()
@@ -46,6 +46,6 @@ class ParamShift:
                 symbol_names=symbol_names,
                 symbol_values=in_values)
             grad = g.gradient(out, in_values)
-        #tf.transpose(grad)
+        # tf.transpose(grad)
 
-        return out, grad * tf.reshape(out, (len(out), 1)) - 2 * grad * tf.reshape(train_y, (len(out), 1))
+        return out, 2 * grad * tf.reshape(out, (len(out), 1)) - 2 * grad * tf.reshape(train_y, (len(out), 1))
