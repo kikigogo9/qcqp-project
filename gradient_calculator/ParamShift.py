@@ -45,6 +45,7 @@ class ParamShift:
                 operators=self.observable,
                 symbol_names=symbol_names,
                 symbol_values=in_values)
+            #loss = mse(train_y, out)
             grad = g.gradient(out, in_values)
         # tf.transpose(grad)
 

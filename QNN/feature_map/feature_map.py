@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import List
 
 import numpy as np
 import sympy
@@ -8,11 +9,11 @@ import tensorflow as tf
 import tensorflow_quantum as tfq
 
 class featureMap(ABC):
-    def __init__(self, symbol : sympy.Symbol, qubits):
+    def __init__(self, symbols : List[sympy.Symbol], qubits):
         self.circuit = None
         self.qubits = qubits
         self.nQubit = len(qubits)
-        self.symbol = symbol
+        self.symbols = symbols
 
 class productMap(featureMap):
     """
@@ -24,6 +25,7 @@ class productMap(featureMap):
         """
 
         Nonlinear rotation function for product map
+        Rotation implemented as input (not in the function)
         @return: rotation function
         """
         return symbol
@@ -35,8 +37,8 @@ class productMap(featureMap):
         @return: product map circuit
         """
         gates = []
-        for i in range(self.nQubit):
-            gates.append(cirq.ry((i+1)*self.rotationFunction(self.symbol)).on(self.qubits[i]))
+        for i, symbol in enumerate(self.symbols):
+            gates.append(cirq.ry(self.rotationFunction(symbol)).on(self.qubits[i]))
         self.circuit = cirq.Circuit(*gates)
         return self.circuit
     
