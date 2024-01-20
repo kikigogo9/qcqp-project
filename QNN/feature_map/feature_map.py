@@ -38,7 +38,7 @@ class productMap(featureMap):
         """
         gates = []
         for i, symbol in enumerate(self.symbols):
-            gates.append(cirq.ry(self.rotationFunction(symbol)).on(self.qubits[i]))
+            gates.append(cirq.ry((i+1)*self.rotationFunction(symbol)).on(self.qubits[i]))
         self.circuit = cirq.Circuit(*gates)
         return self.circuit
     

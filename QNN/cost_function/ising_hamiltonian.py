@@ -1,5 +1,5 @@
 from random import Random
-from typing import Any, List, Tuple
+from typing import Any, List, Tuple, Callable
 
 import cirq
 import numpy as np
@@ -17,7 +17,7 @@ class IsingHamiltonian(CostFunction):
     This class produces a more sophisticated version of the other cost functions.
     """
 
-    def __init__(self, function: Circuit, qubits, symbol_names: List[Any]):
+    def __init__(self, function: Circuit, qubits, symbol_names: List[Any], F: Callable):
         """
 
         @param function: ODE circuit we currently train
@@ -25,6 +25,7 @@ class IsingHamiltonian(CostFunction):
         """
         super().__init__(function)
         self.symbol_names = symbol_names
+        self.F = F
         print("symbol_name_size" + str(len(symbol_names)))
         self.cost_function = None
         for i, q in enumerate(qubits):
@@ -37,7 +38,7 @@ class IsingHamiltonian(CostFunction):
             #    if j < i:
             #        self.cost_function += cirq.Z(q2) * cirq.Z(q) * self._random_weight()*2
 
-        self.expectation = ParamShift(function, self.cost_function, ParamShift.EXACT)
+        self.expectation = ParamShift(circuit=function, observable=self.cost_function, F=F, expectation_mode=ParamShift.EXACT)
 
     def get_cost(self, in_values: Any) -> tf.Tensor:
         """

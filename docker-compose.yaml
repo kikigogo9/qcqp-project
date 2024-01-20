@@ -11,6 +11,14 @@ services:
   server:
     build:
       context: .
+    develop:
+      watch:
+        - action: sync
+          path: ./QNN
+          target: /otp/project/QNN
+        - action: sync
+          path: ./gradient_calculator
+          target: /otp/project/gradient_calculator
     ports:
       - 5000:5000
 
